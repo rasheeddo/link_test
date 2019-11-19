@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- This is to load the urdf file  -->
+	<arg name="model" default="$(find link_test)/urdf/one_link_geometry.xacro"/>
+
+	<!-- I think in case of xacro used we need this robot_description -->
+	<param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+
+	<!-- rviz config file , better to save when change something in rviz, next time it's still visible-->
+	<!-- This rvizconfig arg is a config file that will be used in rviz when started-->
+	<arg name="rvizconfig" default="$(find link_test)/rviz/one_link_urdf.rviz" />
+
+  <!-- The robot_state_publisher and joint_state_publisher are libraries that we can use for any project -->
+  <!-- send fake joint values -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+  	<param name="use_gui" value="TRUE"/>
+  </node>
+  <!-- Combine joint values -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+
+</launch>

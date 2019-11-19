@@ -1,0 +1,59 @@
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- ========================= This for generate world in gazebo ================== -->
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find link_test)/worlds/gravity.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+
+  <!-- ================== Load the URDF into the ROS Parameter Server ================-->
+  <param name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find link_test)/urdf/one_link_geometry.xacro'" />
+
+
+ <!-- =============================== Rviz config file ===============================-->
+  <arg name="rvizconfig" default="$(find link_test)/rviz/one_link_urdf.rviz" />
+
+ <!-- =============================== Load controllers ===============================--> 
+  <rosparam command="load" file="$(find link_test)/config/joints.yaml"/>
+
+ <!-- ==================================== Nodes =====================================-->
+  <!-- The robot_state_publisher and joint_state_publisher are libraries that we can use for any project -->
+  <!-- send fake joint values -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="TRUE"/>
+  </node>
+  <!-- Combine joint values -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+
+  <!-- Controller nodes for each joint -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+    respawn="false" output="screen" ns="/link_test"
+    args="joint_state_publisher
+    joint1_position_controller
+    joint2_position_controller
+    --timeout 60" />
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model one_link_geometry -param robot_description"/>
+
+  <!-- ros_control rrbot launch file -->
+  <!--include file="$(find rrbot_control)/launch/rrbot_control.launch" /-->
+
+</launch>

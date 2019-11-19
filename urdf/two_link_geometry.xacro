@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<robot name="two_link_geometry" xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<!-- Robot Constant Parameters defined as xarco -->
+	<xacro:property name="PI" value="3.1415926535897931"/>
+	<xacro:property name="mass" value="0.2"/>         <!-- unit it is in kg -->
+	<xacro:property name="width" value="0.05"/> 	<!-- unit it is in meter -->
+	<xacro:property name="height" value="0.5"/>  <!-- unit it is in meter -->
+  <xacro:property name="base" value="0.2"/>    <!-- This this the base box side -->
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find link_test)/urdf/two_link_geometry.gazebo" />
+
+
+	<!-- This material is for RViZ not in Gazebo -->
+	<material name="red">
+    <color rgba="0.8 0.1 0 1"/>
+  </material>
+
+  <material name="green">
+    <color rgba="0.1 0.8 0 1"/>
+  </material>
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <!-- This is the wolrd / ground link to fix the robot to the ground -->
+  <link name="base_link">
+        <!-- The value in collision and visual are same-->  
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${base} ${base} ${base}"/>
+      </geometry>
+      <material name="white"/>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${base} ${base} ${base}"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1000"/>
+      <inertia 
+        ixx="${1000 / 12.0 * (base*base + base*base)}" ixy="0.0" ixz="0.0" 
+        iyy="${1000 / 12.0 * (base*base + base*base)}" iyz="0.0" 
+        izz="${1000 / 12.0 * (base*base + base*base)}"/>
+    </inertial>
+  </link>
+
+  <!-- This is the joint that connect the link1 with ground-->
+  <!-- when using type="revolute" rostopic pub cannot send command to Gazebo -->
+  <!-- Working fine with continuous type-->
+  <joint name="joint1" type="continuous">
+    <axis xyz="1 0 0"/>
+    <!--limit effort="0" lower="${-PI/2}" upper="${PI/2}" velocity="0.0"/-->
+    <origin xyz="0 0 ${base/2}"/>
+  	<parent link="base_link"/>
+  	<child link="link1"/>
+    <friction value="1"/>
+  </joint>
+
+  <!-- First Link -->  
+  <link name="link1">
+    <!-- The value in collision and visual are same-->  
+  	<collision>
+  		<origin xyz="0 0 ${(height/2.0)}" rpy="0 0 0"/>
+  		<geometry>
+  			<box size="${width} ${width} ${height}"/>
+  		</geometry>
+      <material name="red"/>
+  	</collision>
+
+  	<visual>
+  		<origin xyz="0 0 ${(height/2.0)}" rpy="0 0 0"/>
+  		<geometry>
+  			<box size="${width} ${width} ${height}"/>
+  		</geometry>
+      <material name="red"/>
+  	</visual>
+
+  	<inertial>
+  		<origin xyz="0 0 0" rpy="0 0 0"/>
+  		<mass value="${mass}"/>
+  		<inertia 
+  			ixx="${mass / 12.0 * (width*width + height*height)}" ixy="0.0" ixz="0.0" 
+  			iyy="${mass / 12.0 * (height*height + width*width)}" iyz="0.0" 
+  			izz="${mass / 12.0 * (width*width + width*width)}"/>
+  	</inertial>
+
+  </link>
+
+  <joint name="joint2" type="continuous">
+    <axis xyz="1 0 0"/>
+    <!--limit effort="0" lower="${-PI/2}" upper="${PI/2}" velocity="0"/-->
+    <origin xyz="${width} 0 ${height}"/>
+    <parent link="link1"/>
+    <child link="link2"/>
+    <friction value="1"/> 
+  </joint>
+
+    <!-- Second Link -->  
+  <link name="link2">
+    <!-- The value in collision and visual are same-->  
+    <collision>
+      <origin xyz="0 0 ${height/2.0}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height}"/>
+      </geometry>
+      <material name="green"/>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 ${height/2.0}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${width} ${width} ${height}"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia 
+        ixx="${mass / 12.0 * (width*width + height*height)}" ixy="0.0" ixz="0.0" 
+        iyy="${mass / 12.0 * (height*height + width*width)}" iyz="0.0" 
+        izz="${mass / 12.0 * (width*width + width*width)}"/>
+    </inertial>
+
+  </link>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+</robot>

@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot name="one_link_geometry" xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<!-- Robot Constant Parameters defined as xarco -->
+	<xacro:property name="PI" value="3.1415926535897931"/>
+	<xacro:property name="mass" value="0.5"/>         <!-- unit it is in kg -->
+	<xacro:property name="width" value="0.02"/> 	<!-- unit it is in meter -->
+	<xacro:property name="height" value="0.5"/>  <!-- unit it is in meter -->
+
+
+  <!-- Import all Gazebo-customization elements, including Gazebo colors -->
+  <xacro:include filename="$(find link_test)/urdf/one_link_geometry.gazebo" />
+
+
+	<!-- This material is for RViZ not in Gazebo -->
+	<material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <!-- This is the wolrd / ground link to fix the robot to the ground -->
+  <link name="world"/>
+  <!-- This is the joint that connect the link1 with ground-->
+  <joint name="joint1" type="revolute">
+    <axis xyz="1 0 0"/>
+    <limit effort="100" lower="${-PI/2}" upper="${PI/2}" velocity="0.0"/>
+    <dynamics damping="0.0"/>
+    <origin xyz="0 0 0"/>
+  	<parent link="world"/>
+  	<child link="link1"/>
+  </joint>
+
+  <!-- One Link -->  
+  <link name="link1">
+    <!-- The value in collision and visual are same-->  
+  	<collision>
+  		<origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+  		<geometry>
+  			<box size="${width} ${width} ${height}"/>
+  		</geometry>
+  	</collision>
+
+  	<visual>
+  		<origin xyz="0 0 ${height/2}" rpy="0 0 0"/>
+  		<geometry>
+  			<box size="${width} ${width} ${height}"/>
+  		</geometry>
+  	</visual>
+
+  	<inertial>
+  		<origin xyz="0 0 0" rpy="0 0 0"/>
+  		<mass value="${mass}"/>
+  		<inertia 
+  			ixx="${mass / 12.0 * (width*width + height*height)}" ixy="0.0" ixz="0.0" 
+  			iyy="${mass / 12.0 * (height*height + width*width)}" iyz="0.0" 
+  			izz="${mass / 12.0 * (width*width + width*width)}"/>
+  	</inertial>
+
+  </link>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+</robot>

@@ -1,0 +1,11 @@
+I did simulate of one and two link robot, so to make it able to run
+- ________.xacro   -> this is like urdf file but we can use variable instead
+- ________.gazebo  -> in case we want the model to be in gazebo we need to add reference to the link from ____.xacro
+- ________.launch  -> this launch file can contain many nodes running in the same time Rviz , Gazebo, and so on.
+
+
+one(two)_link_geometry_rviz.launch is just launching the rviz node and we can see the robot axis, how the joint place properly or not, this rviz launch file is more about checking the robot is ready before move to Gazebo or not. We can use joint_state_publihser node to jog the joint, when we launch the file the small window will pop up
+
+two_link_geometry.launch is launching both gazebo and rviz nodes, but now we have a robot_state_publisher and controller_manager to control each of the robot joint (Note: joint_state_publisher is no longer used in here), so with the controller of joints.yaml file and the transmission part in urdf file the robot can stay upright in gazebo, if not it gonna fall down due to gravity from physic engine in simulation. So the way we can control each joint is
+	- first we need to `rostopic list` to see all of the topics. Now so our controller name space is `two_link_robot` as we specified on .gazebo  . From rostopic list we can see   `/two_link_robot/joint1_position_controller/command` this is the topic that we gonna publish to control the joint in gazebo
+	- then hit `rostopic pub -1 /two_link_robot/joint1_position_controller/command std_msgs/Float64 "data: 0.0"` so we can change data value to control the joint 

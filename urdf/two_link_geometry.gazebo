@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot>
+
+  <!-- ros_control plugin -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/two_link_robot</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <!-- Link1 -->
+  <gazebo reference="link1">
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <kp value="1.0" />
+    <kd value="1.0" />
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <gazebo reference="link2">
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <kp value="1.0" />
+    <kd value="1.0" />
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+
+</robot>
